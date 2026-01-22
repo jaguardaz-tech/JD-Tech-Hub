@@ -91,9 +91,14 @@ function generate(){
     if(r < 0.33){
       enemies.push({type:"walker",x:p.x+40,y:p.y-30,w:30,h:30,dir:1});
     } else if(r < 0.66){
-      enemies.push({type:"spike",x:p.x+40,y:p.y-30,w:30,h:30});
-    } else {
-      enemies.push({type:"jumper",x:p.x+40,y:p.y-30,w:30,h:30,vy:0});
+enemies.push({
+  type: "spike",
+  x: p.x + 40,
+  y: p.y - 120,   // nach oben verschieben!
+  w: 30,
+  h: 120
+});
+   enemies.push({type:"jumper",x:p.x+40,y:p.y-30,w:30,h:30,vy:0});
     }
     last = p;
   }
