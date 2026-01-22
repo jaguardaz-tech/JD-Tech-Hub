@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Snake</title>
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(#020617, #000);
+  color: #f8fafc;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+canvas {
+  background: #020617;
+  margin: 20px auto;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.8);
+}
+
+button {
+  padding: 12px 22px;
+  margin: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #1d4ed8;
+  color: white;
+}
+
+button:hover {
+  background: #2563eb;
+}
+</style>
+</head>
+<body>
+
+<h1>🐍 Snake</h1>
+<p>Steuerung: W A S D</p>
+
+<canvas id="game" width="500" height="500"></canvas>
+
+<div id="ui" style="display:none;">
+  <h2>GAME OVER</h2>
+  <button onclick="restart()">🔄 Neustarten</button>
+  <button onclick="location.href='../../index.html'">🏠 Hub</button>
+</div>
+
+<script>
+"use strict";
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const GRID = 25;
+const COLS = canvas.width / GRID;
+const ROWS = canvas.height / GRID;
+
+let snake, dir, apple, score, gameOver;
+
+function reset() {
+  snake = [{x:10,y:10}];
+  dir = {x:1,y:0};
+  apple = spawnApple();
+  score = 0;
+  gameOver = false;
+  document.getElementById("ui").style.display = "none";
+}
+
+function spawnApple() {
+  return {
+    x: Math.floor(Math.random()*COLS),
+    y: Math.floor(Math.random()*ROWS)
+  };
+}
+
+addEventListener("keydown", e => {
+  if(e.key === "w" && dir.y !== 1) dir = {x:0,y:-1};
+  if(e.key === "s" && dir.y !== -1) dir = {x:0,y:1};
+  if(e.key === "a" && dir.x !== 1) dir = {x:-1,y:0};
+  if(e.key === "d" && dir.x !== -1) dir = {x:1,y:0};
+});
+
+function update() {
+  if(gameOver) return;
+
+  const head = {
+    x: snake[0].x + dir.x,
+    y: snake[0].y + dir.y
+  };
+
+  if(
+    head.x < 0 || head.y < 0 ||
+    head.x >= COLS || head.y >= ROWS ||
+    snake.some(s => s.x === head.x && s.y === head.y)
+  ){
+    gameOver = true;
+    document.getElementById("ui").style.display = "block";
+    return;
+  }
+
+  snake.unshift(head);
+
+  if(head.x === apple.x && head.y === apple.y){
+    score++;
+    apple = spawnApple();
+  } else {
+    snake.pop();
+  }
+}
+
+function drawGrid() {
+  ctx.strokeStyle = "#020617";
+  for(let i=0;i<COLS;i++){
+    ctx.beginPath();
+    ctx.moveTo(i*GRID,0);
+    ctx.lineTo(i*GRID,canvas.height);
+    ctx.stroke();
+  }
+  for(let i=0;i<ROWS;i++){
+    ctx.beginPath();
+    ctx.moveTo(0,i*GRID);
+    ctx.lineTo(canvas.width,i*GRID);
+    ctx.stroke();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawGrid();
+
+  // Apple
+  ctx.fillStyle = "#dc2626";
+  ctx.beginPath();
+  ctx.arc(
+    apple.x*GRID+GRID/2,
+    apple.y*GRID+GRID/2,
+    GRID/2-2,0,Math.PI*2
+  );
+  ctx.fill();
+
+  // Snake
+  snake.forEach((s,i)=>{
+    ctx.fillStyle = i===0 ? "#22c55e" : "#16a34a";
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 5;
+    ctx.fillRect(
+      s.x*GRID+2,
+      s.y*GRID+2,
+      GRID-4,
+      GRID-4
+    );
+  });
+
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillText(`Score: ${score}`,10,20);
+}
+
+function loop() {
+  update();
+  draw();
+}
+
+function restart() {
+  reset();
+}
+
+reset();
+setInterval(loop, 120);
+</script>
+</body>
+</html>
